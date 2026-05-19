@@ -15,7 +15,7 @@
 
 set -uo pipefail
 
-PROJECT_DIR="/Users/harshreddy9/Documents/tradingview-mcp"
+PROJECT_DIR="/Users/harshreddy9/Code/tradingview-mcp"
 HOLIDAY_FILE="${PROJECT_DIR}/dtl_market_holidays.txt"
 LOG="/tmp/dtl-scheduled.log"
 CDP_URL="http://localhost:9222/json/version"

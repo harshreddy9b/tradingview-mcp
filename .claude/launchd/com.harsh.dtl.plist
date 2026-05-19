@@ -21,11 +21,11 @@
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
-        <string>/Users/harshreddy9/Documents/tradingview-mcp/dtl_run_scheduled.sh</string>
+        <string>/Users/harshreddy9/Code/tradingview-mcp/dtl_run_scheduled.sh</string>
     </array>
 
     <key>WorkingDirectory</key>
-    <string>/Users/harshreddy9/Documents/tradingview-mcp</string>
+    <string>/Users/harshreddy9/Code/tradingview-mcp</string>
 
     <key>RunAtLoad</key>
     <false/>

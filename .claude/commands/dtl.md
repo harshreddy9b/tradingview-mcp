@@ -62,7 +62,7 @@ After printing the analysis to chat, ALWAYS generate a PDF copy:
      - 11 AM–1 PM ET → `DTL-YYYY-MM-DD-midday.pdf`
      - Other hours → `DTL-YYYY-MM-DD.pdf`
    - Pass an optional 5th arg to force a label (e.g. `premarket`, `midday`, `EOD`).
-   - Saved to `/Users/harshreddy9/Documents/Trading-Ticker Summary/`.
+   - Saved to `/Users/harshreddy9/Code/Trading-Ticker Summary/`.
 4. Confirm the file path in your final message.
 
 The generator uses headless Google Chrome (`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`) for PDF rendering — no extra deps needed.
