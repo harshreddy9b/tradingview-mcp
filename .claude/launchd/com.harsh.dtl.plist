@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Source-of-truth copy of the DTL launchd schedule.
+  The live copy must live under ~/Library/LaunchAgents/ for launchd to honor it.
+
+  Install on a new Mac (system TZ must be America/New_York for the Hour values
+  to map directly to ET):
+      cp .claude/launchd/com.harsh.dtl.plist ~/Library/LaunchAgents/
+      launchctl load -w ~/Library/LaunchAgents/com.harsh.dtl.plist
+      launchctl list | grep com.harsh.dtl
+
+  Disable:
+      launchctl unload -w ~/Library/LaunchAgents/com.harsh.dtl.plist
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.harsh.dtl</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/harshreddy9/Documents/tradingview-mcp/dtl_run_scheduled.sh</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/harshreddy9/Documents/tradingview-mcp</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+
+    <!-- 9:00 AM and 12:00 PM ET, Monday-Friday. System TZ is America/New_York,
+         so Hour values map directly to ET. Weekday: 1=Mon..5=Fri. -->
+    <key>StartCalendarInterval</key>
+    <array>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>9</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>5</integer></dict>
+        <dict><key>Hour</key><integer>12</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>1</integer></dict>
+        <dict><key>Hour</key><integer>12</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>2</integer></dict>
+        <dict><key>Hour</key><integer>12</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>3</integer></dict>
+        <dict><key>Hour</key><integer>12</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>4</integer></dict>
+        <dict><key>Hour</key><integer>12</integer><key>Minute</key><integer>0</integer><key>Weekday</key><integer>5</integer></dict>
+    </array>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/dtl-launchd.out</string>
+
+    <key>StandardErrorPath</key>
+    <string>/tmp/dtl-launchd.err</string>
+
+    <!-- Empty PATH on launchd; the wrapper script re-exports its own. -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>HOME</key>
+        <string>/Users/harshreddy9/</string>
+    </dict>
+</dict>
+</plist>
