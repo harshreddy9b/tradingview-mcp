@@ -57,16 +57,40 @@ deploy_err="/tmp/dtl-vercel-deploy.err"
 
 token="$(cat "$TOKEN_FILE")"
 
-if ( cd "$WEB_DIR" && VERCEL_TOKEN="$token" vercel deploy --prod --yes ) \
-     >"$deploy_out" 2>"$deploy_err"; then
+# 120s watchdog. macOS has no `timeout` binary, so fork one inline. Without
+# this, a stalled deploy (network/TLS) could block the parent runner long
+# enough for launchd to skip the next scheduled slot.
+( cd "$WEB_DIR" && VERCEL_TOKEN="$token" vercel deploy --prod --yes ) \
+  >"$deploy_out" 2>"$deploy_err" &
+deploy_pid=$!
+
+( sleep 120
+  if kill -0 "$deploy_pid" 2>/dev/null; then
+    kill -TERM "$deploy_pid" 2>/dev/null
+    sleep 5
+    kill -KILL "$deploy_pid" 2>/dev/null
+  fi
+) &
+watchdog_pid=$!
+
+wait "$deploy_pid"
+deploy_rc=$?
+kill "$watchdog_pid" 2>/dev/null
+wait "$watchdog_pid" 2>/dev/null
+
+if [ "$deploy_rc" -eq 0 ]; then
+  # URL regex matches default *.vercel.app; if a custom domain is added later,
+  # the URL won't be parsed and the "no URL parsed" branch will fire.
   url="$(grep -Eo 'https://[^ ]+\.vercel\.app' "$deploy_out" | tail -1)"
   if [ -n "$url" ]; then
     log "deployed: $url"
   else
     log "deploy succeeded but no URL parsed; see $deploy_out"
   fi
+elif [ "$deploy_rc" -eq 143 ] || [ "$deploy_rc" -eq 137 ]; then
+  log "ERROR: vercel deploy killed by 120s watchdog (rc=$deploy_rc)"
 else
-  log "ERROR: vercel deploy failed — last stderr:"
+  log "ERROR: vercel deploy failed (rc=$deploy_rc) — last stderr:"
   tail -10 "$deploy_err" >> "$LOG"
 fi
 
