@@ -57,7 +57,7 @@ deploy_err="/tmp/dtl-vercel-deploy.err"
 
 token="$(cat "$TOKEN_FILE")"
 
-if ( cd "$WEB_DIR" && vercel deploy --prod --token "$token" --yes ) \
+if ( cd "$WEB_DIR" && VERCEL_TOKEN="$token" vercel deploy --prod --yes ) \
      >"$deploy_out" 2>"$deploy_err"; then
   url="$(grep -Eo 'https://[^ ]+\.vercel\.app' "$deploy_out" | tail -1)"
   if [ -n "$url" ]; then
