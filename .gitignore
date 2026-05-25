@@ -4,3 +4,8 @@ scripts/current.pine
 temp_*
 *.log
 discovery-log.json
+
+# DTL web publish — locally-overwritten artifacts
+web/.vercel/
+web/public/index.html
+!web/public/.gitkeep
