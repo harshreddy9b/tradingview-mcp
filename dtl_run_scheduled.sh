@@ -67,6 +67,11 @@ fi
 # --- Run /dtl headlessly --------------------------------------------------------
 cd "$PROJECT_DIR" || { log "cd $PROJECT_DIR failed"; exit 1; }
 
+# Clear any HTML from a prior run so the "publish if HTML exists" check below
+# can't accidentally republish yesterday's report if today's /dtl never gets
+# far enough to produce one.
+rm -f /tmp/dtl_report.html
+
 log "invoking claude -p \"/dtl\" (headless)"
 # Capture stdout to log; stderr separately. Long timeout — full run takes 3-5 min.
 out_file="/tmp/dtl-scheduled-claude.out"
@@ -110,12 +115,16 @@ if [ "$rc" -ne 0 ]; then
 fi
 
 # --- Web publish (best-effort) -------------------------------------------------
-# Push the latest report HTML to Vercel. Failures are logged but do not affect
-# the parent run's exit code — PDF and email have already succeeded by here.
-if [ "$rc" -eq 0 ]; then
+# Push the latest report HTML to Vercel. Gated on the HTML's existence rather
+# than claude's exit code: claude has been observed to hang AFTER successfully
+# producing the report (the watchdog above SIGTERMs it with rc=143), so a
+# non-zero rc doesn't mean the work failed. The HTML is cleared at the start
+# of every run, so "exists now" means "was produced by this run". Failures are
+# logged but do not affect the parent run's exit code.
+if [ -f "/tmp/dtl_report.html" ]; then
   "${PROJECT_DIR}/dtl_publish_web.sh" || log "web publish exited non-zero (ignored)"
 else
-  log "skipping web publish because claude run failed"
+  log "skipping web publish — no report HTML produced (claude rc=$rc)"
 fi
 
 log "=== scheduled run end (rc=$rc) ==="
