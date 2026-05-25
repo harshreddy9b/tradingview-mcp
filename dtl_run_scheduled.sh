@@ -109,5 +109,14 @@ if [ "$rc" -ne 0 ]; then
   tail -20 "$err_file" >> "$LOG"
 fi
 
+# --- Web publish (best-effort) -------------------------------------------------
+# Push the latest report HTML to Vercel. Failures are logged but do not affect
+# the parent run's exit code — PDF and email have already succeeded by here.
+if [ "$rc" -eq 0 ]; then
+  "${PROJECT_DIR}/dtl_publish_web.sh" || log "web publish exited non-zero (ignored)"
+else
+  log "skipping web publish because claude run failed"
+fi
+
 log "=== scheduled run end (rc=$rc) ==="
 exit "$rc"
