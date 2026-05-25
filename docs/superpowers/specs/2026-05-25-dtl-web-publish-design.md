@@ -108,6 +108,14 @@ Manual verification (no automated tests for this — it's a 30-line shell script
 - **Modified:** `dtl_run_scheduled.sh`, `.gitignore`
 - **Unchanged:** `dtl_generate_pdf.mjs`, all Pine, all MCP code
 
+`.gitignore` additions:
+```
+web/.vercel/
+web/public/index.html
+!web/public/.gitkeep
+```
+The placeholder is committed once via `git add -f web/public/index.html` for the initial deploy, then the ignore rule prevents future overwrites from being staged. A `.gitkeep` keeps the directory present.
+
 ## Out-of-scope (YAGNI)
 
 Deferred unless explicitly requested later:
