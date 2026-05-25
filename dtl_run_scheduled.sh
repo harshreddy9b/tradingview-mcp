@@ -73,11 +73,34 @@ out_file="/tmp/dtl-scheduled-claude.out"
 err_file="/tmp/dtl-scheduled-claude.err"
 : > "$out_file"; : > "$err_file"
 
-# 600s hard timeout. claude -p reads no stdin → use </dev/null to be safe.
+# Hard 8-minute wall-clock cap. macOS has no `timeout` binary, so we fork a
+# watchdog. claude -p has been observed to hang after producing the PDF and
+# sending the email; the watchdog SIGTERMs it (then SIGKILLs) so launchd
+# doesn't leave a stale wrapper running into the next interval.
+# --no-session-persistence: don't save a resumable session to disk.
 /opt/homebrew/bin/claude -p "/dtl" \
   --dangerously-skip-permissions \
-  </dev/null >"$out_file" 2>"$err_file"
+  --no-session-persistence \
+  </dev/null >"$out_file" 2>"$err_file" &
+claude_pid=$!
+
+( sleep 480
+  if kill -0 "$claude_pid" 2>/dev/null; then
+    log "claude still alive after 480s — SIGTERM"
+    kill -TERM "$claude_pid" 2>/dev/null
+    sleep 10
+    if kill -0 "$claude_pid" 2>/dev/null; then
+      log "claude still alive after SIGTERM — SIGKILL"
+      kill -KILL "$claude_pid" 2>/dev/null
+    fi
+  fi
+) &
+watchdog_pid=$!
+
+wait "$claude_pid"
 rc=$?
+kill "$watchdog_pid" 2>/dev/null
+wait "$watchdog_pid" 2>/dev/null
 
 # Trim noisy logs for the daily file.
 log "claude exit=$rc, stdout lines=$(wc -l <"$out_file"), stderr lines=$(wc -l <"$err_file")"
